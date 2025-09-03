@@ -1,0 +1,7 @@
+flask==3.0.3
+scikit-learn==1.5.1
+nltk==3.9.1
+# Optional, for better QA and translation (install only if you want advanced mode)
+transformers>=4.30.0; python_version>="3.8"
+torch>=1.13.0; python_version>="3.8"
+googletrans==4.0.0-rc1
