@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>nyay_pro — Legal QA</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>nyay_pro</h1>
+        <p class="tag">Indian Legal Q&A — Accurate, Contextual, Bilingual</p>
+      </header>
+
+      <form id="qa-form">
+        <label for="question">Ask a question</label>
+        <div class="input-row">
+          <input type="text" id="question" name="question" placeholder="e.g., What is Article 21? / अनुच्छेद 21 क्या है?" required />
+          <select id="lang" name="lang" title="Language">
+            <option value="en" selected>English</option>
+            <option value="hi">हिन्दी</option>
+          </select>
+          <label class="explain"><input type="checkbox" id="explain" name="explain" checked /> Explain simply</label>
+          <button type="button" id="voice-btn" title="Speak your question">🎤</button>
+          <button type="submit">Ask</button>
+        </div>
+      </form>
+
+      <section id="result" class="card" hidden>
+        <h2>Answer</h2>
+        <p id="answer"></p>
+        <div class="meta">
+          <span id="source"></span>
+          <span id="similarity"></span>
+          <span id="model"></span>
+        </div>
+        <details>
+          <summary>Show context</summary>
+          <p id="context"></p>
+        </details>
+        <div id="explain-block" class="card" hidden>
+          <h3>Simple Explanation</h3>
+          <p id="explanation"></p>
+        </div>
+        <div class="actions">
+          <button id="tts-btn" title="Read the answer aloud">🔊 Listen</button>
+        </div>
+      </section>
+
+      <footer>
+        <small>Tip: Add more `.txt` files to <code>nyay_pro_app/data/legal_texts/</code> for broader coverage.</small>
+      </footer>
+    </div>
+
+    <script>
+      const form = document.getElementById('qa-form');
+      const result = document.getElementById('result');
+      const answerEl = document.getElementById('answer');
+      const sourceEl = document.getElementById('source');
+      const simEl = document.getElementById('similarity');
+      const ctxEl = document.getElementById('context');
+      const modelEl = document.getElementById('model');
+      const explainBlock = document.getElementById('explain-block');
+      const explanationEl = document.getElementById('explanation');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const res = await fetch('/ask', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.ok) {
+          answerEl.textContent = data.answer;
+          sourceEl.textContent = 'Source: ' + (data.source || '—');
+          simEl.textContent = '(similarity: ' + (data.similarity ?? '-') + ')';
+          modelEl.textContent = 'Model: ' + (data.model_used ?? '-');
+          ctxEl.textContent = data.context || '';
+          if (data.explanation) {
+            explanationEl.textContent = data.explanation;
+            explainBlock.hidden = false;
+          } else {
+            explainBlock.hidden = true;
+          }
+          result.hidden = false;
+        } else {
+          alert(data.error || 'Something went wrong.');
+        }
+      });
+
+      // Voice input: sets language based on selector
+      const voiceBtn = document.getElementById('voice-btn');
+      let recognizing = false;
+      let recognition = null;
+      const langSelect = document.getElementById('lang');
+
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SR();
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.addEventListener('result', (event) => {
+          const transcript = event.results[0][0].transcript;
+          document.getElementById('question').value = transcript;
+        });
+
+        recognition.addEventListener('end', () => {
+          recognizing = false;
+          voiceBtn.textContent = '🎤';
+        });
+      } else {
+        voiceBtn.disabled = true;
+        voiceBtn.title = 'Speech recognition not supported in this browser';
+      }
+
+      voiceBtn.addEventListener('click', () => {
+        if (!recognition) return;
+        if (!recognizing) {
+          recognizing = true;
+          voiceBtn.textContent = '🛑';
+          recognition.lang = langSelect.value === 'hi' ? 'hi-IN' : 'en-IN';
+          recognition.start();
+        } else {
+          recognition.stop();
+        }
+      });
+
+      // TTS
+      const ttsBtn = document.getElementById('tts-btn');
+      ttsBtn.addEventListener('click', () => {
+        const text = answerEl.textContent + (explanationEl.textContent ? ". " + explanationEl.textContent : "");
+        if (!('speechSynthesis' in window)) {
+          alert('SpeechSynthesis not supported in this browser.');
+          return;
+        }
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = langSelect.value === 'hi' ? 'hi-IN' : 'en-IN';
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+      });
+    </script>
+  </body>
+</html>

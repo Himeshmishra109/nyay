@@ -1,0 +1,18 @@
+*{box-sizing:border-box}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Noto Sans',sans-serif;margin:0;background:#071027;color:#e7eef8}
+.container{max-width:980px;margin:0 auto;padding:24px}
+header{margin-bottom:16px}
+h1{margin:0;font-size:32px;letter-spacing:.5px}
+.tag{opacity:.85;margin-top:6px}
+form{margin:16px 0}
+label{display:block;margin-bottom:6px;font-weight:600}
+.input-row{display:flex;gap:8px;align-items:center}
+input[type=text]{flex:1;padding:12px 14px;border-radius:10px;border:1px solid #15304b;background:#071827;color:#e7eef8;outline:none}
+select{padding:10px 12px;border-radius:10px;background:#0f2a40;color:#e7eef8;border:1px solid #15304b}
+.explain{display:flex;align-items:center;gap:6px;color:#cfe7ff}
+button{padding:10px 12px;border-radius:10px;border:0;background:#1b7cff;color:white;cursor:pointer;font-weight:600}
+button#voice-btn{background:#0f4b66}
+.card{background:#072036;border:1px solid #10324b;border-radius:12px;padding:12px;margin-top:12px}
+.meta{display:flex;gap:12px;opacity:.9;font-size:14px;margin-top:8px}
+details{margin-top:8px}
+footer{margin-top:24px;opacity:.8}
+code{background:#082233;padding:2px 6px;border-radius:6px}
